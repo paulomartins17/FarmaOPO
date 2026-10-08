@@ -39,8 +39,10 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>FarmaOPE</Text>
-      <Text style={styles.subtitle}>Acesso Restrito</Text>
+      <View style={{ alignItems: 'center', marginBottom: 24 }}>
+        <Text style={styles.title}>FarmaOPO</Text>
+        <Text style={styles.subtitle}>Sistema de Gestão Farmacêutica</Text>
+      </View>
       
       <View style={styles.inputContainer}>
         <Text style={styles.label}>E-mail</Text>

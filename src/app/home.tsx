@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const handleLogout = async () => {
@@ -11,19 +12,34 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Painel de Controle</Text>
-      <Text style={styles.subtitle}>Gestão de Medicamentos</Text>
+      <View style={styles.headerArea}>
+        <MaterialIcons name="local-pharmacy" size={36} color="#2563EB" />
+        <Text style={styles.title}>Painel de Controle</Text>
+        <Text style={styles.subtitle}>Gestão e Inteligência Farmacêutica</Text>
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/medications')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push('/medications')}
+      >
+        <MaterialIcons name="format-list-bulleted" size={20} color="#FFFFFF" />
         <Text style={styles.buttonText}>Lista de Medicamentos</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/new-medication')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push('/new-medication')}
+      >
+        <MaterialIcons name="add-circle-outline" size={20} color="#FFFFFF" />
         <Text style={styles.buttonText}>Cadastrar Novo Medicamento</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Sair da conta</Text>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
+      >
+        <MaterialIcons name="logout" size={20} color="#DC2626" />
+        <Text style={styles.logoutText}>Encerrar Sessão</Text>
       </TouchableOpacity>
     </View>
   );
@@ -36,40 +52,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
   },
+  headerArea: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#111827',
+    marginTop: 12,
     marginBottom: 4,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 32,
     textAlign: 'center',
   },
   button: {
     backgroundColor: '#2563EB',
-    padding: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderRadius: 6,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 12,
+    gap: 8,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   logoutButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: '#DC2626',
+    borderColor: '#FECACA',
     marginTop: 16,
   },
   logoutText: {
     color: '#DC2626',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
 });
