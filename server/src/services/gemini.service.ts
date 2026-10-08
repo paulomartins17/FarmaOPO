@@ -7,7 +7,7 @@ export interface IGeminiService {
 
 export class GeminiService implements IGeminiService {
   private readonly genAI: GoogleGenerativeAI | null = null;
-  private readonly modelName = 'gemini-2.5-flash';
+  private readonly modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
   private readonly mandatoryDisclaimerText =
     'AVISO REGULATÓRIO: As orientações técnicas aqui expressas possuem caráter estritamente informativo e não substituem o aconselhamento médico individualizado ou a leitura integral da bula oficial homologada pela ANVISA.';

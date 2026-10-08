@@ -14,12 +14,27 @@ import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ApiService, MedicationBriefingData } from '../services/api.service';
 
+interface StatusModalState {
+  visible: boolean;
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+}
+
 export default function NewMedicationScreen() {
   const [name, setName] = useState('');
   const [dosage, setDosage] = useState('');
   const [time, setTime] = useState('');
   const [observations, setObservations] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Popup de status (Confirmação / Erro)
+  const [statusModal, setStatusModal] = useState<StatusModalState>({
+    visible: false,
+    type: 'success',
+    title: '',
+    message: '',
+  });
 
   // Estado para consulta prévia de briefing via Gemini
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -28,7 +43,12 @@ export default function NewMedicationScreen() {
 
   const handleSave = async () => {
     if (!name.trim() || !dosage.trim() || !time.trim()) {
-      Alert.alert('Dados Incompletos', 'Preencha o nome, dosagem e horário de uso.');
+      setStatusModal({
+        visible: true,
+        type: 'error',
+        title: 'Dados Incompletos',
+        message: 'Preencha o nome, dosagem e horário de posologia.',
+      });
       return;
     }
 
@@ -41,20 +61,41 @@ export default function NewMedicationScreen() {
         observations: observations.trim() || undefined,
       });
 
-      Alert.alert('Sucesso', 'Medicamento registrado com sucesso no sistema.', [
-        { text: 'Concluir', onPress: () => router.back() },
-      ]);
+      setStatusModal({
+        visible: true,
+        type: 'success',
+        title: 'Registro Concluído',
+        message: `O medicamento "${name.trim()}" foi registrado com sucesso na base de dados.`,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Falha ao salvar medicamento.';
-      Alert.alert('Não Foi Possível Salvar', message);
+      setStatusModal({
+        visible: true,
+        type: 'error',
+        title: 'Falha no Cadastro',
+        message,
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCloseStatusModal = () => {
+    const isSuccess = statusModal.type === 'success';
+    setStatusModal(prev => ({ ...prev, visible: false }));
+    if (isSuccess) {
+      router.back();
+    }
+  };
+
   const handlePreviewBriefing = async () => {
     if (!name.trim()) {
-      Alert.alert('Atenção', 'Informe ao menos o nome do medicamento para consultar o briefing.');
+      setStatusModal({
+        visible: true,
+        type: 'error',
+        title: 'Identificação Necessária',
+        message: 'Informe o nome do medicamento para consultar o parecer técnico.',
+      });
       return;
     }
 
@@ -66,7 +107,12 @@ export default function NewMedicationScreen() {
     } catch (error) {
       setPreviewModalVisible(false);
       const message = error instanceof Error ? error.message : 'Falha ao obter análise técnica.';
-      Alert.alert('Erro na Análise', message);
+      setStatusModal({
+        visible: true,
+        type: 'error',
+        title: 'Erro na Análise Clínica',
+        message,
+      });
     } finally {
       setPreviewLoading(false);
     }
@@ -141,7 +187,7 @@ export default function NewMedicationScreen() {
           disabled={previewLoading || loading}
         >
           <MaterialIcons name="assignment" size={18} color="#2563EB" />
-          <Text style={styles.previewButtonText}>Consultar Parecer Técnico Prévia (IA)</Text>
+          <Text style={styles.previewButtonText}>Consultar Parecer Técnico Prévio (IA)</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -156,6 +202,41 @@ export default function NewMedicationScreen() {
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Popup de Status (Confirmação ou Erro) */}
+      <Modal
+        visible={statusModal.visible}
+        animationType="fade"
+        transparent
+        onRequestClose={handleCloseStatusModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.statusCard}>
+            <View style={styles.statusIconContainer}>
+              {statusModal.type === 'success' ? (
+                <MaterialIcons name="check-circle" size={36} color="#16A34A" />
+              ) : (
+                <MaterialIcons name="error" size={36} color="#DC2626" />
+              )}
+            </View>
+            <Text style={styles.statusTitle}>{statusModal.title}</Text>
+            <Text style={styles.statusMessage}>{statusModal.message}</Text>
+            <TouchableOpacity
+              style={[
+                styles.statusButton,
+                statusModal.type === 'success'
+                  ? styles.statusButtonSuccess
+                  : styles.statusButtonError,
+              ]}
+              onPress={handleCloseStatusModal}
+            >
+              <Text style={styles.statusButtonText}>
+                {statusModal.type === 'success' ? 'Concluir' : 'Fechar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Modal de Briefing Prévio */}
       <Modal
@@ -318,14 +399,62 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
+  /* Estilos do Popup de Status */
+  statusCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    width: '100%',
+    maxWidth: 380,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  statusIconContainer: {
+    marginBottom: 12,
+  },
+  statusTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  statusMessage: {
+    fontSize: 14,
+    color: '#4B5563',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  statusButton: {
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  statusButtonSuccess: {
+    backgroundColor: '#2563EB',
+  },
+  statusButtonError: {
+    backgroundColor: '#DC2626',
+  },
+  statusButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  /* Estilos do Modal de Briefing */
   modalCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
     maxHeight: '85%',
+    width: '100%',
     overflow: 'hidden',
   },
   modalHeader: {
